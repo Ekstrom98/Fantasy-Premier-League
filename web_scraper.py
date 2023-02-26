@@ -29,10 +29,9 @@ button = WebDriverWait(driver, 10).until(
 
 # Click the button
 button.click()
-# Print the title of the page
+
+# Print the title of the page to test
 print(driver.title)
-import time 
-time.sleep(4)
 
 # Close the browser
 driver.quit()
