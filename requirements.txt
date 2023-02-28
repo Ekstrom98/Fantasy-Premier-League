@@ -98,6 +98,7 @@ pyppeteer==1.0.2
 pyrsistent==0.19.3
 PySocks==1.7.1
 python-dateutil==2.8.2
+python-dotenv==1.0.0
 python-json-logger==2.0.7
 pytz==2022.7.1
 PyYAML==6.0
@@ -134,6 +135,7 @@ uvicorn==0.20.0
 virtualenv==20.19.0
 wcwidth==0.2.6
 webcolors==1.12
+webdriver-manager==3.8.5
 webencodings==0.5.1
 websocket-client==1.5.1
 websockets==10.4
