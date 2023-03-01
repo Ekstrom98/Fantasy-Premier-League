@@ -31,16 +31,14 @@ button = WebDriverWait(driver, 10).until(
 button.click()
 
 player_list = []
-import time
-element = driver.find_element("xpath",'//*[@id="root"]/div[2]/div/div[1]/table/tbody/tr[1]').text
-nbr_of_elements = len(driver.find_element("xpath",'//*[@id="root"]/div[2]/div/div[1]/table/tbody/tr').text)
 
+nbr_of_elements = len(driver.find_elements("xpath",'//div[@class="ElementInTable__Name-y9xi40-1 heNyFi"]'))
+print(nbr_of_elements)
 counter = 0
 for i in range(nbr_of_elements):
     try:
-        element = driver.find_element("xpath",f'//*[@id="root"]/div[2]/div/div[1]/table/tbody/tr[{i+1}]').text
+        element = driver.find_element("xpath",f'(//div[@class="ElementInTable__Name-y9xi40-1 heNyFi"])[{i+1}]').text
         player_list.append(element)
-        print(player_list)
     except:
         counter += 100
         driver.execute_script(f"window.scrollTo(0, {counter});")
