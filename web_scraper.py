@@ -7,6 +7,8 @@ from selenium.webdriver.common.action_chains import ActionChains, ScrollOrigin
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
+import itertools
+
 # Set Chrome to run in headless mode
 chrome_options = Options()
 chrome_options.add_argument('--headless')
@@ -100,6 +102,6 @@ for j in range(nbr_of_pages):
     if(j == nbr_of_pages - 1):
         print("Scraper finished.")
         break
-
 # Close the browser
 driver.quit()
+all_players_curated = list(itertools.chain(*all_players))
