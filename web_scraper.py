@@ -25,7 +25,7 @@ driver.get(stats_url)
 
 # Wait for the button to be clickable
 button = WebDriverWait(driver, 10).until(
-    EC.element_to_be_clickable((By.XPATH, "//button[@class='_2hTJ5th4dIYlveipSEMYHH BfdVlAo_cgSVjDUegen0F js-accept-all-close']"))
+    EC.element_to_be_clickable((By.XPATH, "//button[@id='onetrust-accept-btn-handler']"))
 )
 # Click the button
 button.click()
@@ -89,8 +89,6 @@ for j in range(nbr_of_pages):
     if(j == nbr_of_pages - 1):
         print("Scraper finished.")
         break
-
-
 
 # Close the browser
 driver.quit()
