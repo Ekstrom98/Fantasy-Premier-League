@@ -11,7 +11,7 @@ import sqlite3
 
 # Set Chrome to run in headless mode
 chrome_options = Options()
-#chrome_options.add_argument('--headless')
+chrome_options.add_argument('--headless')
 
 # Install and manage the Chrome driver executable
 service = Service(executable_path=ChromeDriverManager().install())
@@ -39,7 +39,6 @@ driver.get(stats_url)
 button = WebDriverWait(driver, 10).until(
     EC.element_to_be_clickable((By.XPATH, "//button[@id='onetrust-accept-btn-handler']"))
 )
-
 # Click the button
 button.click()
 
@@ -52,7 +51,6 @@ while nbr_of_pages == 0:
     except:
         counter += 100
         driver.execute_script(f"window.scrollTo(0,{counter});")
-        
 
 for j in range(nbr_of_pages):
     os.system('clear')
