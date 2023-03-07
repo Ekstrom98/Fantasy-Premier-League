@@ -43,9 +43,6 @@ button = WebDriverWait(driver, 10).until(
 # Click the button
 button.click()
 
-player_batch = []
-all_players = []
-
 counter = 0
 nbr_of_pages = 0
 while nbr_of_pages == 0:
@@ -72,9 +69,9 @@ for j in range(nbr_of_pages):
             player_form = driver.find_element("xpath",f'(//tr[@class="ElementTable__ElementRow-sc-1v08od9-3 kGMjuJ"])[{i+1}]/td[5]').text
             player_points = driver.find_element("xpath",f'(//tr[@class="ElementTable__ElementRow-sc-1v08od9-3 kGMjuJ"])[{i+1}]/td[6]').text
             player_team = driver.find_element("xpath",f'(//span[@class="ElementInTable__Team-y9xi40-3 hosEuf"])[{i+1}]').text
-
-            # insert player data into the 'players' table
-            c.execute("INSERT INTO players (name, cost, selected_by, form, points, team) \
+            
+            # Insert player data into the 'players_table' table
+            c.execute("INSERT INTO players_table (name, cost, selected_by, form, points, team) \
            VALUES (?, ?, ?, ?, ?, ?)", (player_name, player_cost, player_selected_by, player_form, player_points, player_team))
             conn.commit()
         except:
@@ -104,9 +101,7 @@ for j in range(nbr_of_pages):
                 continue_loop = False
         except:
             driver.execute_script(f"window.scrollTo(0, 0);")
-    
-    all_players.append(player_batch)
-    player_batch = []
+
     if(j == nbr_of_pages - 1):
         print("Scraper finished.")
         break
