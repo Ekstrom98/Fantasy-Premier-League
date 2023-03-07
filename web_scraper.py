@@ -104,4 +104,5 @@ for j in range(nbr_of_pages):
         break
 # Close the browser
 driver.quit()
+
 all_players_curated = list(itertools.chain(*all_players))
