@@ -1,2 +1,4 @@
 venv
 players.db
+text_summarizer.py
+database_test_fetch.py
