@@ -11,7 +11,7 @@ import os
 def driver_setup():
     # Set Chrome to run in headless mode
     chrome_options = Options()
-    #chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--headless')
 
     # Install and manage the Chrome driver executable
     service = Service(executable_path=ChromeDriverManager().install())
@@ -74,3 +74,33 @@ def next_page(driver, nbr_of_pages, loop_counter):
         except:
             # Scroll up to the top of the page
             driver.execute_script(f"window.scrollTo(0, 0);")
+
+def open_extended_player_info(driver, loop_counter=None):
+
+    # Wait for the button to be clickable
+    info_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, \
+                        f'(//button[@class="ElementDialogButton__StyledElementDialogButton-sc-1vrzlgb-0 jVAeGl"])[{loop_counter+1}]'))
+    )
+    # Click the button
+    info_button.click()
+
+def close_extended_player_info(driver):
+    close_button_xpath = '//button[@class="Dialog__CloseButton-sc-5bogmv-1 cgQMVU"]'
+    # Wait for the button to be clickable
+    close_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, close_button_xpath))
+    )
+    # Click the button
+    close_button.click()
+
+def this_season_stats(driver):
+    super_css="#root-dialog > div > dialog > div > div.Dialog__StyledDialogBody-sc-5bogmv-9.jyKAwP.ism-overflow-scroll"
+    all_player_info = driver.find_element("css selector", super_css).text
+
+    return all_player_info
+
+
+
+
+
