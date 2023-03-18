@@ -1,57 +1,49 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains, ScrollOrigin
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import os
-from fpl_scraper_functions import driver_setup, accept_cookies, find_number_of_pages, next_page, open_extended_player_info, this_season_stats, close_extended_player_info
+from fpl_scraper_functions import driver_setup, find_number_of_pages, distribute_pages, loop_through_pages
+import pickle
 
-driver = driver_setup()
-
-accept_cookies(driver)
-nbr_of_pages = find_number_of_pages(driver)
 players = []
 
-# Loop through the pages
-for j in range(nbr_of_pages):
-    os.system('clear') # Clear the terminal
-    percentage_done = (j+1)/nbr_of_pages*100 # Calculate the percentage of pages done
-    print(f"Scraper is on page {j+1} of {nbr_of_pages} ({percentage_done}% done).") # Print the current page number and the progress in %
+driver_1 = driver_setup(start_page=1)
 
-    counter = 0 # Reset the counter
-    driver.execute_script("window.scrollTo(0,0);") # Scroll up to the top of the page
+nbr_of_pages_total = find_number_of_pages(driver_1)
+driver_distribution = distribute_pages(nbr_of_pages_total, 5)
+iteration_1 = driver_distribution[0]
+loop_through_pages(driver=driver_1, nbr_of_pages_to_scrape=iteration_1, players=players, driver_name="Driver 1", \
+                   nbr_of_pages_total=nbr_of_pages_total, \
+                   current_page=1)
+# Close the driver
+driver_1.quit()
 
-    # Find the number of players on the page
-    nbr_of_elements = len(driver.find_elements("xpath",'//div[@class="ElementInTable__Name-y9xi40-1 heNyFi"]'))
+iteration_2 = driver_distribution[1]
+driver_2 = driver_setup(start_page=iteration_1+1)
+loop_through_pages(driver=driver_2, nbr_of_pages_to_scrape=iteration_2, players=players, \
+                   driver_name="Driver 2", nbr_of_pages_total=nbr_of_pages_total, \
+                   current_page=iteration_1+1)
+driver_2.quit()
 
-    # Loop through the players on the page
-    for i in range(nbr_of_elements):
-        # Try to find the player data
 
-        information_fetched = False
-        while(information_fetched == False):
-            try:
-                open_extended_player_info(driver = driver, loop_counter = i)
-                player_info = this_season_stats(driver = driver)
-                players.append(player_info)
-                information_fetched = True
-            except:
-                # If an error occurs, scroll down the page and try again
-                counter += 100
-                driver.execute_script(f"window.scrollTo(0, {counter});")
-       
-        # Close the extended player info
-        close_extended_player_info(driver = driver)
+iteration_3 = driver_distribution[2]
+driver_3 = driver_setup(start_page=iteration_1+iteration_2+1)
+loop_through_pages(driver=driver_3, nbr_of_pages_to_scrape=iteration_3, players=players, \
+                   driver_name="Driver 3", nbr_of_pages_total=nbr_of_pages_total, \
+                   current_page=iteration_1+iteration_2+1)
+driver_3.quit()
 
-    # Go to the next page
-    next_page(driver, nbr_of_pages,loop_counter=j)
+iteration_4 = driver_distribution[3]
+driver_4 = driver_setup(start_page=iteration_1+iteration_2+iteration_3+1)
+loop_through_pages(driver=driver_4, nbr_of_pages_to_scrape=iteration_4, players=players, \
+                   driver_name="Driver 4", nbr_of_pages_total=nbr_of_pages_total, \
+                   current_page=iteration_1+iteration_2+iteration_3+1)
+driver_4.quit()
 
-    if(j == nbr_of_pages - 1):
-        print("Scraper is finished.")
-        break
+iteration_5 = driver_distribution[4]
+driver_5 = driver_setup(start_page=iteration_1+iteration_2+iteration_3+iteration_4+1)
+loop_through_pages(driver=driver_5, nbr_of_pages_to_scrape=iteration_5, players=players, \
+                   driver_name="Driver 5", nbr_of_pages_total=nbr_of_pages_total, \
+                   current_page=iteration_1+iteration_2+iteration_3+iteration_4+1)
+driver_5.quit()
 
-# Close the browser
-driver.quit()
+# Open a file for binary writing
+with open('players.pickle', 'wb') as file:
+    # Use pickle.dump() to serialize and save the list to the file
+    pickle.dump(players, file)
