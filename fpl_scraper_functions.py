@@ -8,7 +8,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
 
-def driver_setup():
+
+def driver_setup(start_page: int = 1):
     # Set Chrome to run in headless mode
     chrome_options = Options()
     chrome_options.add_argument('--headless')
@@ -21,9 +22,16 @@ def driver_setup():
 
     # URL for player statistics
     stats_url = "https://fantasy.premierleague.com/statistics"
-
+    
     # Navigate to a webpage
     driver.get(stats_url)
+    accept_cookies(driver)
+    nbr_of_pages=find_number_of_pages(driver)
+    print(nbr_of_pages)
+    
+    if(start_page>1):
+        next_page_driver_setup(driver, start_page-1, nbr_of_pages)
+    driver.execute_script(f"window.scrollTo(0, 0);")
     return driver
 
 def accept_cookies(driver):
@@ -46,11 +54,46 @@ def find_number_of_pages(driver):
             driver.execute_script(f"window.scrollTo(0,{counter});") # Scroll down the page with the counter
     return nbr_of_pages
 
-def next_page(driver, nbr_of_pages, loop_counter):
+def next_page_driver_setup(driver, start_page, nbr_of_pages):
+    loop_counter = 0
+    for i in range(start_page):
+        counter = 0
+        continue_loop = True
+        while(continue_loop):
+            try:
+                if(loop_counter == 0):
+                    # Wait for the button to be clickable
+                    button = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, "(//button[@class='PaginatorButton__Button-xqlaki-0 cDdTXr'])"))
+                    )
+                    # Click the button
+                    button.click()
+                    # Set continue_loop to False to break out of the while loop
+                    continue_loop = False
+                    loop_counter += 1
+                elif((loop_counter>0) and (loop_counter<nbr_of_pages-1)):
+                    # Wait for the button to be clickable
+                    button = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, "(//button[@class='PaginatorButton__Button-xqlaki-0 cDdTXr'])[2]"))
+                    )
+                    # Click the button
+                    button.click()
+                    # Set continue_loop to False to break out of the while loop
+                    continue_loop = False
+                    loop_counter += 1
+                else:
+                    # Set continue_loop to False to break out of the while loop
+                    continue_loop = False
+            except:
+                # If an error occurs, scroll down the page and try again
+                counter += 100
+                driver.execute_script(f"window.scrollTo(0, {counter});")
+
+def next_page(driver, nbr_of_pages, current_page):
     continue_loop = True
     while(continue_loop):
         try:
-            if(loop_counter == 0):
+            if(current_page == 1):
                 # Wait for the button to be clickable
                 button = WebDriverWait(driver, 10).until(
                     EC.element_to_be_clickable((By.XPATH, "(//button[@class='PaginatorButton__Button-xqlaki-0 cDdTXr'])"))
@@ -59,7 +102,8 @@ def next_page(driver, nbr_of_pages, loop_counter):
                 button.click()
                 # Set continue_loop to False to break out of the while loop
                 continue_loop = False
-            elif((loop_counter>0) and (loop_counter<nbr_of_pages-1)):
+
+            elif(current_page > 1 and current_page < nbr_of_pages - 1):
                 # Wait for the button to be clickable
                 button = WebDriverWait(driver, 10).until(
                     EC.element_to_be_clickable((By.XPATH, "(//button[@class='PaginatorButton__Button-xqlaki-0 cDdTXr'])[2]"))
@@ -68,12 +112,16 @@ def next_page(driver, nbr_of_pages, loop_counter):
                 button.click()
                 # Set continue_loop to False to break out of the while loop
                 continue_loop = False
+
             else:
                 # Set continue_loop to False to break out of the while loop
                 continue_loop = False
         except:
             # Scroll up to the top of the page
             driver.execute_script(f"window.scrollTo(0, 0);")
+            pass
+
+
 
 def open_extended_player_info(driver, loop_counter=None):
 
@@ -84,7 +132,6 @@ def open_extended_player_info(driver, loop_counter=None):
     )
     # Click the button
     info_button.click()
-
 def close_extended_player_info(driver):
     close_button_xpath = '//button[@class="Dialog__CloseButton-sc-5bogmv-1 cgQMVU"]'
     # Wait for the button to be clickable
@@ -100,7 +147,50 @@ def this_season_stats(driver):
 
     return all_player_info
 
+def distribute_pages(nbr_of_pages, sections):
+    result = [0] * sections
+    for i in range(nbr_of_pages):
+        result[i % sections] += 1
+    return result
 
+def loop_through_pages(driver, nbr_of_pages_to_scrape:int, players:list, nbr_of_pages_total: int, driver_name = None, current_page = 1):
+    driver_name = driver_name
+    # Loop through the pages
+    for j in range(nbr_of_pages_to_scrape):
+        os.system('clear') # Clear the terminal
+        print(f"{driver_name} is on page {j+1} of {nbr_of_pages_to_scrape}.") # Print the current page number and the progress in %
 
+        counter = 0 # Reset the counter
+        driver.execute_script("window.scrollTo(0,0);") # Scroll up to the top of the page
 
+        # Find the number of players on the page
+        nbr_of_elements = len(driver.find_elements("xpath",'//div[@class="ElementInTable__Name-y9xi40-1 heNyFi"]'))
 
+        # Loop through the players on the page
+        for i in range(nbr_of_elements):
+            # Try to find the player data
+            information_fetched = False
+            while(information_fetched == False):
+                try:
+                    open_extended_player_info(driver = driver, loop_counter = i)
+                    player_info = this_season_stats(driver = driver)
+                    players.append(player_info)
+                    information_fetched = True
+                except:
+                    # If an error occurs, scroll down the page and try again
+                    counter += 100
+                    driver.execute_script(f"window.scrollTo(0, {counter});")
+        
+            # Close the extended player info
+            close_extended_player_info(driver = driver)
+        next = True
+        while(next):
+            try:
+                # Go to the next page
+                next_page(driver, nbr_of_pages_total,current_page=j+current_page)
+                next = False
+            except:
+                print("Failure to go to next page. Trying again.")
+        if(j == nbr_of_pages_to_scrape - 1):
+            print("Scraper is finished.")
+            break
