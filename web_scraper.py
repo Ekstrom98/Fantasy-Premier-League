@@ -6,6 +6,7 @@ players = []
 driver_1 = driver_setup(start_page=1)
 
 nbr_of_pages_total = find_number_of_pages(driver_1)
+print(nbr_of_pages_total)
 driver_distribution = distribute_pages(nbr_of_pages_total, 5)
 iteration_1 = driver_distribution[0]
 loop_through_pages(driver=driver_1, nbr_of_pages_to_scrape=iteration_1, players=players, driver_name="Driver 1", \

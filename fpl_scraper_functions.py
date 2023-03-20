@@ -7,6 +7,8 @@ from selenium.webdriver.common.action_chains import ActionChains, ScrollOrigin
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
+from selenium.common.exceptions import TimeoutException
+
 
 
 def driver_setup(start_page: int = 1):
@@ -27,7 +29,6 @@ def driver_setup(start_page: int = 1):
     driver.get(stats_url)
     accept_cookies(driver)
     nbr_of_pages=find_number_of_pages(driver)
-    print(nbr_of_pages)
     
     if(start_page>1):
         next_page_driver_setup(driver, start_page-1, nbr_of_pages)
@@ -114,14 +115,20 @@ def next_page(driver, nbr_of_pages, current_page):
                 continue_loop = False
 
             else:
-                # Set continue_loop to False to break out of the while loop
-                continue_loop = False
+                try:
+                    # Wait for the button to be clickable
+                    button = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, "(//button[@class='PaginatorButton__Button-xqlaki-0 cDdTXr'])[2]"))
+                    )
+                    # Click the button
+                    button.click()
+                finally:
+                    # Set continue_loop to False to break out of the while loop
+                    continue_loop = False
         except:
             # Scroll up to the top of the page
             driver.execute_script(f"window.scrollTo(0, 0);")
             pass
-
-
 
 def open_extended_player_info(driver, loop_counter=None):
 
@@ -132,6 +139,7 @@ def open_extended_player_info(driver, loop_counter=None):
     )
     # Click the button
     info_button.click()
+
 def close_extended_player_info(driver):
     close_button_xpath = '//button[@class="Dialog__CloseButton-sc-5bogmv-1 cgQMVU"]'
     # Wait for the button to be clickable
@@ -143,6 +151,23 @@ def close_extended_player_info(driver):
 
 def this_season_stats(driver):
     super_css="#root-dialog > div > dialog > div > div.Dialog__StyledDialogBody-sc-5bogmv-9.jyKAwP.ism-overflow-scroll"
+    # Define the locator for the element you want to wait for
+    element_locator = (By.CSS_SELECTOR, "tr.styles__HistoryTotalsRow-ahs9zc-18.jZiieB")
+
+    # Set the maximum time you want to wait for the element (in seconds)
+    timeout = 10
+
+    try:
+        # Wait for the element to be visible
+        element = WebDriverWait(driver, timeout).until(
+            EC.visibility_of_element_located(element_locator)
+        )
+        # Perform actions with the element here
+        print("Element is visible now.")
+        
+    except TimeoutException:
+        print(f"Element with locator {element_locator} not visible after {timeout} seconds.")
+
     all_player_info = driver.find_element("css selector", super_css).text
 
     return all_player_info
@@ -185,12 +210,17 @@ def loop_through_pages(driver, nbr_of_pages_to_scrape:int, players:list, nbr_of_
             close_extended_player_info(driver = driver)
         next = True
         while(next):
+            counter = 0
             try:
                 # Go to the next page
                 next_page(driver, nbr_of_pages_total,current_page=j+current_page)
                 next = False
             except:
+                counter += 1
                 print("Failure to go to next page. Trying again.")
+                if(counter == 10):
+                    print("Too many failures. Exiting.")
+                    break
         if(j == nbr_of_pages_to_scrape - 1):
             print("Scraper is finished.")
             break
